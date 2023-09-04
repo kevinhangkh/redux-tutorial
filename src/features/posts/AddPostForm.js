@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { postAdded } from './postsSlice';
+import { addNewPost } from './postsSlice';
 import { selectAllUsers } from '../users/usersSlice';
 
 function AddPostForm() {
@@ -10,6 +10,9 @@ function AddPostForm() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [userId, setUserId] = useState('');
+  const [addRequestStatus, setAddRequestStatus] = useState('idle');
+
+  const canSave = [title, content, userId].every(Boolean) && addRequestStatus === 'idle';
 
   const users = useSelector(selectAllUsers);
 
@@ -25,18 +28,24 @@ function AddPostForm() {
     setUserId(e.target.value);
   };
 
-  const resetAll = () => {
+  const resetAllFields = () => {
     setTitle('');
     setContent('');
     setUserId('');
   };
 
   const savePost = () => {
-    if (!title || !content) {
-      return;
+    if (canSave) {
+      try {
+        setAddRequestStatus('pending');
+        dispatch(addNewPost({ title, body: content, userId })).unwrap(); // unwrap allows to get the error from the promise if there is one
+        resetAllFields();
+      } catch (error) {
+        console.error('Failed to save post', error);
+      } finally {
+        setAddRequestStatus('idle');
+      }
     }
-    dispatch(postAdded(title, content, userId));
-    resetAll();
   };
 
   const usersOptions = users.map((user) => (
@@ -44,8 +53,6 @@ function AddPostForm() {
       {user.name}
     </option>
   ));
-
-  const canSave = title && content && userId;
 
   return (
     <section>
