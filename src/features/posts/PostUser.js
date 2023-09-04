@@ -12,11 +12,11 @@ function PostUser(props) {
 }
 
 PostUser.propTypes = {
-  userId: PropTypes.string,
+  userId: PropTypes.number,
 };
 
 PostUser.defaultProps = {
-  userId: '',
+  userId: null,
 };
 
 export default PostUser;
